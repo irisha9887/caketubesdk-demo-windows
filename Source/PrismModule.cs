@@ -2,6 +2,7 @@
 {
     using CakeTubeSdk.Core.Services;
     using CakeTubeSdk.Demo.Control;
+    using CakeTubeSdk.Windows;
 
     using Microsoft.Practices.Unity;
 
@@ -42,6 +43,7 @@
         public void Initialize()
         {
             this.unityContainer.RegisterType<IVpnServerService>();
+            this.unityContainer.RegisterType<IVpnConnectionService>();
 
             this.unityContainer.RegisterType<object, MainScreen>(typeof(MainScreen).FullName);
 

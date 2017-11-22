@@ -4,7 +4,6 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using System.ServiceProcess;
     using System.Threading.Tasks;
     using System.Windows.Input;
     using System.Windows.Threading;
@@ -13,10 +12,12 @@
     using CakeTubeSdk.Core.ApiParameters;
     using CakeTubeSdk.Core.Infrastructure;
     using CakeTubeSdk.Core.Services;
+    using CakeTubeSdk.Core.Storage;
     using CakeTubeSdk.Core.Vpn;
     using CakeTubeSdk.Demo.Helper;
     using CakeTubeSdk.Demo.Logger;
     using CakeTubeSdk.Windows;
+    using CakeTubeSdk.Windows.Vpn;
 
     using Prism.Commands;
     using Prism.Mvvm;
@@ -35,6 +36,17 @@
         /// CakeTube VPN server service instance.
         /// </summary>
         private IVpnServerService vpnServerService;
+
+        /// <summary>
+        /// CakeTube VPN connection service instance.
+        /// </summary>
+        private IVpnConnectionService vpnConnectionService;
+
+        private VpnServiceInfoStorage vpnServiceInfoStorage;
+        
+        private VpnConnectionInfo vpnConnectionInfo;
+
+        private VpnWindowsServiceHandler vpnWindowsServiceHandler;
 
         /// <summary>
         /// Device id for backend login method.
@@ -144,7 +156,7 @@
         /// <summary>
         /// Name of windows service to use to establish VPN connection.
         /// </summary>
-        private string serviceName = "CakeTube Demo Service";
+        private string serviceName = "CakeTube Demo Vpn Service";
 
         /// <summary>
         /// Log contents.
@@ -606,6 +618,7 @@
                 // Work with UI
                 this.IsErrorVisible = false;
                 this.IsLogoutButtonVisible = false;
+                this.IsLoggedIn = false;
 
                 // Perform logout
                 var logoutResponse =
@@ -636,6 +649,7 @@
                 // Show error when exception occurred
                 this.IsErrorVisible = true;
                 this.ErrorText = e.Message;
+                this.IsLoggedIn = true;
                 this.IsLogoutButtonVisible = true;
             }
         }
@@ -663,37 +677,40 @@
         /// </summary>
         private void InitializeEvents()
         {
-/*            this.vpnServerService.ConnectedChanged += (sender, args) =>
-            {
-                if (args.Connected)
-                {
-                    this.VpnClientOnConnected();
-                }
-                else
-                {
-                    this.VpnClientOnDisconnected();
-                }
-            };
-            this.vpnServerService.StatisticsChanged += this.VpnClientOnStatisticsChanged;*/
+            this.vpnConnectionService.VpnStateChanged += this.VpnConnectionServiceOnVpnStateChanged;
+            this.vpnConnectionService.VpnTrafficChanged += this.VpnConnectionServiceOnVpnTrafficChanged;
         }
 
-        /// <summary>
-        /// VPN client statistics changed event handler.
-        /// </summary>
-        /// <param name="sender">Sender (VPN client).</param>
-        /// <param name="vpnStatisticsChangedEventArgs">Event arguments (bytes sent/received).</param>
-        /*private void VpnClientOnStatisticsChanged(object sender, VpnStatisticsChangedEventArgs vpnStatisticsChangedEventArgs)
+        private void VpnConnectionServiceOnVpnTrafficChanged(VpnTraffic vpnTraffic)
         {
-            this.BytesReceived = vpnStatisticsChangedEventArgs.Data.BytesReceived.ToString();
-            this.BytesSent = vpnStatisticsChangedEventArgs.Data.BytesSent.ToString();
-        }*/
+            this.BytesReceived = vpnTraffic.InBytes.ToString();
+            this.BytesSent = vpnTraffic.OutBytes.ToString();
+        }
 
-        /// <summary>
-        /// VPN client disconnected event handler.
-        /// </summary>
-        private void VpnClientOnDisconnected()
+        private void VpnConnectionServiceOnVpnStateChanged(VpnConnectionState vpnConnectionState)
         {
-            this.SetStatusDisconnected();
+            this.Status = vpnConnectionState.ToString();
+            switch (vpnConnectionState)
+            {
+                case VpnConnectionState.Disconnected:
+                    this.SetStatusDisconnected();
+                    break;
+                case VpnConnectionState.Disconnecting:
+                    this.IsDisconnectButtonVisible = false;
+                    this.IsConnectButtonVisible = false;
+                    this.IsLoginButtonVisible = false;
+                    this.IsLogoutButtonVisible = false;
+                    break;
+                case VpnConnectionState.Connected:
+                    this.VpnClientOnConnected();
+                    break;
+                case VpnConnectionState.Connecting:
+                    this.IsDisconnectButtonVisible = false;
+                    this.IsConnectButtonVisible = false;
+                    this.IsLoginButtonVisible = false;
+                    this.IsLogoutButtonVisible = false;
+                    break;
+            }
         }
 
         /// <summary>
@@ -701,7 +718,6 @@
         /// </summary>
         private void VpnClientOnConnected()
         {
-            this.Status = "Connected";
             this.IsConnectButtonVisible = false;
             this.IsDisconnectButtonVisible = true;
             this.IsLogoutButtonVisible = false;
@@ -764,6 +780,18 @@
             cakeTubeBootstrapper.Bootstrapp(new UnityCakeTubeIocContainer());
 
             this.vpnServerService = CakeTubeIoc.Container.Resolve<IVpnServerService>();
+            this.vpnConnectionService = CakeTubeIoc.Container.Resolve<VpnConnectionService>();
+            this.vpnServiceInfoStorage = CakeTubeIoc.Container.Resolve<VpnServiceInfoStorage>();
+            this.vpnConnectionInfo = CakeTubeIoc.Container.Resolve<VpnConnectionInfo>();
+            this.vpnWindowsServiceHandler = new VpnWindowsServiceHandler(this.vpnServiceInfoStorage, this.vpnConnectionInfo);
+
+            var isRunning = this.vpnWindowsServiceHandler.IsRunning();
+
+            if (isRunning)
+            {
+                this.vpnWindowsServiceHandler.Stop();
+            }
+
             this.InitializeEvents();
         }
 
@@ -774,12 +802,41 @@
         {
             try
             {
-                // Connect VPN using provided VPN server IP and user hash
-                // await this.vpnServerService.StartVpn(this.Country);
+                this.IsConnectButtonVisible = false;
+                this.IsDisconnectButtonVisible = false;
+                var vpnCredentialsResponse = await this.vpnServerService.GetCredentialsAsync(
+                                                 new GetCredentialsParams
+                                                     {
+                                                         AccessToken = this.AccessToken,
+                                                         VpnType = VpnProtocolType.Openvpn,
+                                                         WithCertificate = false,
+                                                         CountryCode = this.Country
+                                                     });
+
+                if (!vpnCredentialsResponse.IsSuccess)
+                {
+                    throw new Exception(vpnCredentialsResponse.Error);
+                }
+
+                var vpnCredentials = vpnCredentialsResponse.VpnCredentials;
+
+                var t = await this.vpnConnectionService.ConnectAsync(
+                    new VpnCredentials
+                        {
+                            Country = this.Country ?? string.Empty,
+                            Password = vpnCredentials.Password,
+                            Ip = vpnCredentials.Ip,
+                            Port = vpnCredentials.Port,
+                            Protocol = vpnCredentials.Protocol,
+                            UserName = vpnCredentials.UserName
+                        });
+                
             }
             catch (Exception e)
             {
-                // Show error when exception occured
+                // Show error when exception occurred
+                this.IsConnectButtonVisible = true;
+                this.IsDisconnectButtonVisible = false;
                 this.IsErrorVisible = true;
                 this.ErrorText = e.Message;
             }
@@ -793,11 +850,11 @@
             try
             {
                 // Disconnect VPN
-                // await this.vpnServerService.StopVpn();
+                await this.vpnConnectionService.Disconnect();                
             }
             catch (Exception e)
             {
-                // Show error when exception occured
+                // Show error when exception occurred
                 this.IsErrorVisible = true;
                 this.ErrorText = e.Message;
             }
@@ -829,7 +886,7 @@
             try
             {
                 // Check if access token is not empty
-                if (string.IsNullOrWhiteSpace(this.AccessToken))
+                if (string.IsNullOrEmpty(this.AccessToken))
                 {
                     return;
                 }

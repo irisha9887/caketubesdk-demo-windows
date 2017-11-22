@@ -12,6 +12,8 @@
     UpgradeCode="$(var.UpgradeCode)">
     
 		<Package InstallerVersion="300" Compressed="yes" InstallScope="perMachine" />
+
+    <MediaTemplate EmbedCab="yes" />
     
     <Condition Message="A later version of [ProductName] is already installed.">NOT NEWERVERSIONDETECTED</Condition>
 
@@ -138,6 +140,7 @@
 
     <Feature Id="ProductFeature" Title="$(var.ProductName)" Level="1">
       <ComponentRef Id="ProductComponent" />
+      <ComponentRef Id="ApplicationComponent" />
       <ComponentRef Id="x86DriverComponent"/>
       <ComponentRef Id="x64DriverComponent"/>
       <ComponentRef Id="ServiceComponent"/>      

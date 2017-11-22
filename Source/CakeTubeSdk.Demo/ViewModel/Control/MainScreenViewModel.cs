@@ -804,6 +804,7 @@
             {
                 this.IsConnectButtonVisible = false;
                 this.IsDisconnectButtonVisible = false;
+                this.IsLoginButtonVisible = false;
                 var vpnCredentialsResponse = await this.vpnServerService.GetCredentialsAsync(
                                                  new GetCredentialsParams
                                                      {
@@ -835,6 +836,7 @@
             catch (Exception e)
             {
                 // Show error when exception occurred
+                this.IsLogoutButtonVisible = true;
                 this.IsConnectButtonVisible = true;
                 this.IsDisconnectButtonVisible = false;
                 this.IsErrorVisible = true;

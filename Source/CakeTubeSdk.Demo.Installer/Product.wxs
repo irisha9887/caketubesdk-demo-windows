@@ -12,9 +12,8 @@
     UpgradeCode="$(var.UpgradeCode)">
     
 		<Package InstallerVersion="300" Compressed="yes" InstallScope="perMachine" />
-
     <MediaTemplate EmbedCab="yes" />
-    
+    <MajorUpgrade DowngradeErrorMessage="A newer version of $(var.ProductName) is already installed."  />
     <Condition Message="A later version of [ProductName] is already installed.">NOT NEWERVERSIONDETECTED</Condition>
 
     <Directory Id="TARGETDIR" Name="SourceDir">

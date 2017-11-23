@@ -539,7 +539,7 @@
                 var loginResponse = await this.vpnServerService.LoginAsync(
                                         new VpnLoginParams
                                             {
-                                                AuthMethod = VpnAuthMethod.Anonymous,
+                                                AuthenticationMethod = VpnAuthenticationMethod.Anonymous,
                                                 DeviceId = this.DeviceId,
                                                 DeviceType = DeviceType.Desktop,
                                                 OAuthAccessToken = string.Empty,
@@ -584,7 +584,7 @@
             try
             {
                 // Get available countries
-                var countriesResponse = await this.vpnServerService.GetCountriesAsync(this.AccessToken);
+                var countriesResponse = await this.vpnServerService.GetCountriesAsync(this.AccessToken, VpnProtocolType.Openvpn);
 
                 // Check whether request was successful
                 if (!countriesResponse.IsSuccess)

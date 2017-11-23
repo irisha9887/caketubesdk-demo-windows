@@ -1,6 +1,8 @@
 ﻿namespace CakeTubeSdk.Demo.View
 {
     using System.ComponentModel;
+    using System.Diagnostics;
+    using System.Reflection;
     using System.Windows;
 
     using CakeTubeSdk.Demo.Helper;
@@ -19,6 +21,9 @@
         public Shell()
         {
             this.InitializeComponent();
+            var assembly = Assembly.GetExecutingAssembly();
+            var version = FileVersionInfo.GetVersionInfo(assembly.Location);
+            this.Title = $"CakeTube Demo {version.FileVersion}";
         }
 
         /// <summary>

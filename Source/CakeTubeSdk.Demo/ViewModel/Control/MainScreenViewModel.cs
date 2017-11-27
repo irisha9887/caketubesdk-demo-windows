@@ -855,7 +855,7 @@
 
                 var vpnCredentials = vpnCredentialsResponse.VpnCredentials;
 
-                var t = await this.vpnConnectionService.ConnectAsync(
+                await this.vpnConnectionService.ConnectAsync(
                     new VpnCredentials
                         {
                             Country = this.Country ?? string.Empty,

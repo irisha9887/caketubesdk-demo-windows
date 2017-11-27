@@ -202,7 +202,8 @@
                         Grid.Column="0"
                         Content="Reconnect on WakeUp event"
                         IsChecked="{Binding ReconnectOnWakeUp}"
-                        IsEnabled="{Binding IsLoggedIn, Converter={StaticResource InvertBoolean}}" />
+                        IsEnabled="{Binding IsLoggedIn, Converter={StaticResource InvertBoolean}}"
+                        Visibility="Hidden" />
                 </Grid>
 
                 <Grid Grid.Row="2" VerticalAlignment="Center">

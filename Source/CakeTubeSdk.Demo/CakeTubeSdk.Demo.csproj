@@ -103,6 +103,7 @@
     <Compile Include="Converter\InvertBoolean.cs" />
     <Compile Include="Converter\InvertCollapsed.cs" />
     <Compile Include="Converter\InvertVisibility.cs" />
+    <Compile Include="Helper\GitHubHelper.cs" />
     <Compile Include="Helper\LogoutHelper.cs" />
     <Compile Include="Helper\PasswordHelper.cs" />
     <Compile Include="Helper\RegistryHelper.cs" />

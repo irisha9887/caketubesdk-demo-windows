@@ -5,6 +5,8 @@
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
+    using System.Windows;
+    using System.Windows.Controls;
     using System.Windows.Input;
     using System.Windows.Threading;
 
@@ -127,6 +129,11 @@
         /// Disconnect button visibility flag.
         /// </summary>
         private bool isDisconnectButtonVisible;
+
+        /// <summary>
+        /// Use GitHyb authorization flag.
+        /// </summary>
+        private bool useGithubAuthorization;
 
         /// <summary>
         /// Connect command.
@@ -448,6 +455,15 @@
         }
 
         /// <summary>
+        /// Use GitHyb authorization flag.
+        /// </summary>
+        public bool UseGithubAuthorization
+        {
+            get => this.useGithubAuthorization;
+            set => this.SetProperty(ref this.useGithubAuthorization, value);
+        }
+
+        /// <summary>
         /// Logged in flag.
         /// </summary>
         public bool IsLoggedIn
@@ -511,7 +527,7 @@
         /// <summary>
         /// Login command.
         /// </summary>
-        public ICommand LoginCommand => this.loginCommand ?? (this.loginCommand = new DelegateCommand(this.Login));
+        public ICommand LoginCommand => this.loginCommand ?? (this.loginCommand = new DelegateCommand<object>(this.Login));
 
         /// <summary>
         /// Logout command.
@@ -521,7 +537,7 @@
         /// <summary>
         /// Performs login to the backend server.
         /// </summary>
-        private async void Login()
+        private async void Login(object parameter)
         {
             try
             {
@@ -535,14 +551,32 @@
                 // Bootstrap VPN
                 this.BootstrapVpn();
 
+                var passwordBox = (PasswordBox)parameter;
+                var password = passwordBox.Password;
+
+                var isGithub = this.UseGithubAuthorization;
+
+                var vpnAuthenticationMethod = isGithub
+                            ? VpnAuthenticationMethod.GitHub
+                            : VpnAuthenticationMethod.Anonymous;
+
+                var authAccessToken = isGithub ? await GitHubHelper.GetGithubOAuthToken(this.GitHubLogin, password) : string.Empty;
+
+                if (isGithub && string.IsNullOrEmpty(authAccessToken))
+                {
+                    MessageBox.Show("Could not perform GitHub authorization!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    this.IsLoginButtonVisible = true;
+                    return;
+                }
+
                 // Perform login
                 var loginResponse = await this.vpnServerService.LoginAsync(
                                         new VpnLoginParams
                                             {
-                                                AuthenticationMethod = VpnAuthenticationMethod.Anonymous,
+                                                AuthenticationMethod = vpnAuthenticationMethod,
                                                 DeviceId = this.DeviceId,
                                                 DeviceType = DeviceType.Desktop,
-                                                OAuthAccessToken = string.Empty,
+                                                OAuthAccessToken = authAccessToken,
                                                 DeviceName = Environment.MachineName
                                             });
 

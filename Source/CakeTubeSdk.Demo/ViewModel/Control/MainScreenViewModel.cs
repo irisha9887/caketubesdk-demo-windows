@@ -34,6 +34,12 @@
         /// </summary>
         private static readonly string MachineId;
 
+        private static string protocol;
+
+        private static bool hasTriedUdp;
+
+        private static bool hasTriedTcp;
+
         /// <summary>
         /// CakeTube VPN server service instance.
         /// </summary>
@@ -511,12 +517,18 @@
         /// <summary>
         /// Connect command.
         /// </summary>
-        public ICommand ConnectCommand => this.connectCommand ?? (this.connectCommand = new DelegateCommand(this.Connect));
+        public ICommand ConnectCommand => this.connectCommand ?? (this.connectCommand = new DelegateCommand(
+                                                                      async () =>
+                                                                          {
+                                                                              hasTriedUdp = false;
+                                                                              hasTriedTcp = false;
+                                                                              await this.Connect();
+                                                                          }));
 
         /// <summary>
         /// Disconnect command.
         /// </summary>
-        public ICommand DisconnectCommand => this.disconnectCommand ?? (this.disconnectCommand = new DelegateCommand(this.Disconnect));
+        public ICommand DisconnectCommand => this.disconnectCommand ?? (this.disconnectCommand = new DelegateCommand(async () => { await this.Connect(); }));
 
         /// <summary>
         /// Clear log command.
@@ -574,8 +586,7 @@
                                         new VpnLoginParams
                                             {
                                                 AuthenticationMethod = vpnAuthenticationMethod,
-                                                DeviceId = this.DeviceId,
-                                                DeviceType = DeviceType.Desktop,
+                                                DeviceId = this.DeviceId,                                                
                                                 OAuthAccessToken = authAccessToken,
                                                 DeviceName = Environment.MachineName
                                             });
@@ -618,7 +629,7 @@
             try
             {
                 // Get available countries
-                var countriesResponse = await this.vpnServerService.GetCountriesAsync(this.AccessToken, VpnProtocolType.Openvpn);
+                var countriesResponse = await this.vpnServerService.GetCountriesAsync(this.AccessToken, VpnProtocolType.OpenVpn);
 
                 // Check whether request was successful
                 if (!countriesResponse.IsSuccess)
@@ -728,23 +739,40 @@
             {
                 case VpnConnectionState.Disconnected:
                     this.SetStatusDisconnected();
+                    if (!hasTriedTcp)
+                    {
+                        Task.Run(this.Reconnect);
+                    }
+
                     break;
                 case VpnConnectionState.Disconnecting:
-                    this.IsDisconnectButtonVisible = false;
-                    this.IsConnectButtonVisible = false;
-                    this.IsLoginButtonVisible = false;
-                    this.IsLogoutButtonVisible = false;
+                    this.SetStatusInProgress();
                     break;
-                case VpnConnectionState.Connected:
-                    this.VpnClientOnConnected();
+                case VpnConnectionState.Connected:                    
+                    this.VpnClientOnConnected();                    
                     break;
                 case VpnConnectionState.Connecting:
-                    this.IsDisconnectButtonVisible = false;
-                    this.IsConnectButtonVisible = false;
-                    this.IsLoginButtonVisible = false;
-                    this.IsLogoutButtonVisible = false;
+                   this.SetStatusInProgress();
                     break;
             }
+        }
+
+        private async Task Reconnect()
+        {
+            hasTriedTcp = true;
+            await Task.Delay(1000);                   
+            await this.Disconnect();
+            this.SetStatusInProgress();
+            await Task.Delay(1000);
+            await this.Connect();
+        }
+
+        private void SetStatusInProgress()
+        {
+            this.IsDisconnectButtonVisible = false;
+            this.IsConnectButtonVisible = false;
+            this.IsLoginButtonVisible = false;
+            this.IsLogoutButtonVisible = false;
         }
 
         /// <summary>
@@ -832,10 +860,17 @@
         /// <summary>
         /// Performs VPN connection.
         /// </summary>
-        private async void Connect()
+        private async Task Connect()
         {
             try
             {
+                protocol = !hasTriedUdp ? VpnProtocolType.OpenVpnUdp : VpnProtocolType.OpenVpnTcp;
+
+                if (protocol == VpnProtocolType.OpenVpnUdp || protocol == VpnProtocolType.OpenVpn)
+                {
+                    hasTriedUdp = true;
+                }
+                
                 this.IsConnectButtonVisible = false;
                 this.IsDisconnectButtonVisible = false;
                 this.IsLoginButtonVisible = false;
@@ -843,7 +878,7 @@
                                                  new GetCredentialsParams
                                                      {
                                                          AccessToken = this.AccessToken,
-                                                         VpnType = VpnProtocolType.Openvpn,
+                                                         VpnType = protocol,
                                                          WithCertificate = false,
                                                          CountryCode = this.Country
                                                      });
@@ -865,7 +900,8 @@
                             Protocol = vpnCredentials.Protocol,
                             UserName = vpnCredentials.UserName
                         });
-                
+
+                hasTriedUdp = true;
             }
             catch (Exception e)
             {
@@ -881,7 +917,7 @@
         /// <summary>
         /// Disconnects from VPN server.
         /// </summary>
-        private async void Disconnect()
+        private async Task Disconnect()
         {
             try
             {

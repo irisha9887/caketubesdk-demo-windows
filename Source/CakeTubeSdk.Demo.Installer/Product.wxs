@@ -51,8 +51,7 @@
 
     <DirectoryRef Id="SERVICELOCATION">
       <Component Id="ServiceComponent" Guid="3B2F583A-3C96-440B-8D59-61D00A9D8E44" KeyPath="yes">
-        <File Source="..\..\Service\VpnService.exe" Checksum="yes" />
-        <File Id="Newtonsoft.Json.dll_service" Source="..\..\Service\Newtonsoft.Json.dll" Checksum="yes" />
+        <File Source="..\..\Service\VpnService.exe" Checksum="yes" />        
       </Component>
     </DirectoryRef>
 

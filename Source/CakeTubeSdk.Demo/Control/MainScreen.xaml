@@ -135,7 +135,7 @@
                     <ComboBox
                         Grid.Column="1"
                         IsEditable="False"
-                        IsEnabled="{Binding IsLoggedIn}"
+                        IsEnabled="{Binding IsCountryDropdownAvailable}"
                         ItemsSource="{Binding CountriesList}"
                         Text="{Binding Country}" />
                 </Grid>

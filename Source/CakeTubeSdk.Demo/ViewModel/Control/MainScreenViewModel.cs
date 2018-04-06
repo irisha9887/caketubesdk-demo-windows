@@ -216,6 +216,11 @@
         private bool reconnectOnWakeUp = true;
 
         /// <summary>
+        /// Reconnect on wake up event.
+        /// </summary>
+        private bool isCountryDropdownAvailable;
+
+        /// <summary>
         /// <see cref="MainScreenViewModel"/> static constructor. Performs <see cref="MachineId"/> initialization.
         /// </summary>
         static MainScreenViewModel()
@@ -509,6 +514,15 @@
         }
 
         /// <summary>
+        /// Is CountryDropdown available.
+        /// </summary>
+        public bool IsCountryDropdownAvailable
+        {
+            get => this.isCountryDropdownAvailable;
+            set => this.SetProperty(ref this.isCountryDropdownAvailable, value);
+        }
+
+        /// <summary>
         /// Connect command.
         /// </summary>
         public ICommand ConnectCommand => this.connectCommand ?? (this.connectCommand = new DelegateCommand(this.Connect));
@@ -683,7 +697,8 @@
                 this.IsErrorVisible = true;
                 this.ErrorText = e.Message;
                 this.IsLoggedIn = true;
-                this.IsLogoutButtonVisible = true;
+                this.IsCountryDropdownAvailable = true;
+                this.IsLogoutButtonVisible = true;                
             }
         }
 
@@ -766,6 +781,7 @@
             this.IsLoginButtonVisible = true;
             this.IsLogoutButtonVisible = false;
             this.IsLoggedIn = false;
+            this.IsCountryDropdownAvailable = false;
         }
 
         /// <summary>
@@ -776,6 +792,7 @@
             this.IsLoginButtonVisible = false;
             this.IsLogoutButtonVisible = true;
             this.IsLoggedIn = true;
+            this.IsCountryDropdownAvailable = true;
         }
 
         /// <summary>
@@ -789,6 +806,7 @@
             this.IsDisconnectButtonVisible = false;
             this.IsConnectButtonVisible = true;
             this.IsLogoutButtonVisible = true;
+            this.IsCountryDropdownAvailable = true;
         }
 
         /// <summary>
@@ -840,6 +858,7 @@
                 this.IsConnectButtonVisible = false;
                 this.IsDisconnectButtonVisible = false;
                 this.IsLoginButtonVisible = false;
+                this.IsCountryDropdownAvailable = false;
                 var credentialsParams = new GetCredentialsParams
                             {
                                 AccessToken = this.AccessToken,

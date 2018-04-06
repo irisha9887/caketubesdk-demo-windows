@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Include>
   <?define ProductName="CakeTube Demo" ?>
-  <?define ProductVersion="1.0.9.9" ?>
-  <?define ProductCode="64BD9388-87AD-4F4A-AE5E-39AC24BAA34F"?>
+  <?define ProductVersion="1.0.10.10" ?>
+  <?define ProductCode="E3ED9A2B-7238-49C7-8877-F4147F7888AD"?>
   <?define UpgradeCode="4BB5F4D4-4715-4DE3-9BB0-2716E40C67E7"?>
   <?define Manufacturer="AnchorFree, Inc"?>
   <?if $(var.Platform)=x64 ?>

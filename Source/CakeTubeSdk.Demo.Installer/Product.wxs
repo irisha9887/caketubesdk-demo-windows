@@ -65,8 +65,7 @@
         <File Source="..\..\bin\$(var.AppPath)\Microsoft.Practices.Unity.Configuration.dll" Checksum="yes" />
         <File Source="..\..\bin\$(var.AppPath)\Microsoft.Practices.Unity.dll" Checksum="yes" />
         <File Source="..\..\bin\$(var.AppPath)\Microsoft.Practices.Unity.RegistrationByConvention.dll" Checksum="yes" />
-        <File Source="..\..\bin\$(var.AppPath)\Prism.dll" Checksum="yes" />
-        <File Source="..\..\bin\$(var.AppPath)\RestSharp.dll" Checksum="yes" />
+        <File Source="..\..\bin\$(var.AppPath)\Prism.dll" Checksum="yes" />        
         <File Source="..\..\bin\$(var.AppPath)\Prism.Unity.Wpf.dll" Checksum="yes" />
         <File Source="..\..\bin\$(var.AppPath)\Prism.Wpf.dll" Checksum="yes" />
         <File Source="..\..\bin\$(var.AppPath)\System.Windows.Interactivity.dll" Checksum="yes" />

@@ -10,11 +10,9 @@
     using System.Windows.Input;
     using System.Windows.Threading;
 
-    using CakeTubeSdk.Core;
     using CakeTubeSdk.Core.ApiParameters;
     using CakeTubeSdk.Core.Infrastructure;
     using CakeTubeSdk.Core.Services;
-    using CakeTubeSdk.Core.Storage;
     using CakeTubeSdk.Core.Vpn;
     using CakeTubeSdk.Demo.Helper;
     using CakeTubeSdk.Demo.Logger;
@@ -37,16 +35,12 @@
         /// <summary>
         /// CakeTube VPN server service instance.
         /// </summary>
-        private IVpnServerService vpnServerService;
+        private VpnServerService vpnServerService;
 
         /// <summary>
         /// CakeTube VPN connection service instance.
         /// </summary>
-        private IVpnConnectionService vpnConnectionService;
-
-        private VpnServiceInfoStorage vpnServiceInfoStorage;
-        
-        private VpnConnectionInfo vpnConnectionInfo;
+        private VpnConnectionService vpnConnectionService;
 
         private VpnWindowsServiceHandler vpnWindowsServiceHandler;
 
@@ -814,29 +808,11 @@
         /// </summary>
         private void BootstrapVpn()
         {
-            var type = typeof(CakeTubeIoc);
-            var field = type.GetField("_container", BindingFlags.NonPublic | BindingFlags.Static);
-            field.SetValue(null, null);
-
-            var cakeTubeConfiguration = new BootstrapServerConfiguration
-                                            {
-                                                CarrierId = this.CarrierId,
-                                                VpnServerUrlList = new List<Uri> { new Uri(this.BackendUrl) }
-                                            };
-
-            var vpnConnectionConfiguration = new VpnConnectionConfiguration
-                                                 {
-                                                     VpnWindowsServiceName = this.ServiceName
-                                                 };
-
-            var cakeTubeBootstrapper = new CakeTubeWindowsBootstrapper(cakeTubeConfiguration, vpnConnectionConfiguration);
-            cakeTubeBootstrapper.Bootstrapp(new UnityCakeTubeIocContainer());
-
-            this.vpnServerService = CakeTubeIoc.Container.Resolve<IVpnServerService>();
-            this.vpnConnectionService = CakeTubeIoc.Container.Resolve<VpnConnectionService>();
-            this.vpnServiceInfoStorage = CakeTubeIoc.Container.Resolve<VpnServiceInfoStorage>();
-            this.vpnConnectionInfo = CakeTubeIoc.Container.Resolve<VpnConnectionInfo>();
-            this.vpnWindowsServiceHandler = new VpnWindowsServiceHandler(this.vpnServiceInfoStorage, this.vpnConnectionInfo);
+            CakeTube.Initialize(this.ServiceName, this.CarrierId, this.BackendUrl);
+            
+            this.vpnServerService = CakeTube.VpnServerService;
+            this.vpnConnectionService = CakeTube.VpnConnectionService;
+            this.vpnWindowsServiceHandler = CakeTube.VpnWindowsServiceHandler;
 
             var isRunning = this.vpnWindowsServiceHandler.IsRunning();
 
@@ -885,6 +861,7 @@
                 this.IsDisconnectButtonVisible = false;
                 this.IsErrorVisible = true;
                 this.ErrorText = e.Message;
+                this.IsCountryDropdownAvailable = true;
             }
         }
 

@@ -42,9 +42,6 @@
         /// </summary>
         public void Initialize()
         {
-            this.unityContainer.RegisterType<IVpnServerService>();
-            this.unityContainer.RegisterType<IVpnConnectionService>();
-
             this.unityContainer.RegisterType<object, MainScreen>(typeof(MainScreen).FullName);
 
             this.regionManager.RegisterViewWithRegion("MainRegion", () => this.unityContainer.Resolve<MainScreen>());

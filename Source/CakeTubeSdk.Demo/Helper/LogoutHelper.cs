@@ -5,6 +5,7 @@
     using CakeTubeSdk.Core;
     using CakeTubeSdk.Core.ApiParameters;
     using CakeTubeSdk.Core.Services;
+    using CakeTubeSdk.Windows;
 
     /// <summary>
     /// Logout related properties and methods.
@@ -24,7 +25,7 @@
             try
             {
                 // Resolve backend service
-                var partnerBackendService = CakeTubeIoc.Container.Resolve<IVpnServerService>();
+                var partnerBackendService = CakeTube.VpnServerService;
 
                 // Logout from backend
                 await partnerBackendService.LogoutAsync(new LogoutRequestParams { AccessToken = AccessToken });

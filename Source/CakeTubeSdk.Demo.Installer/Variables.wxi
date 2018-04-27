@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Include>
   <?define ProductName="CakeTube Demo" ?>
-  <?define ProductVersion="1.0.15.15" ?>
+  <?define ProductVersion="1.0.16.16" ?>
   <?define ProductCode="9ADD3679-7688-46B0-B7C2-7BEDAF9CC964"?>
   <?define UpgradeCode="4BB5F4D4-4715-4DE3-9BB0-2716E40C67E7"?>
   <?define Manufacturer="AnchorFree, Inc"?>

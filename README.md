@@ -3,7 +3,7 @@
 GitHub project: https://github.com/AnchorFreePartner/caketubesdk-demo-windows
 This repository contains demo application which demonstrates usage of CakeTube VPN Windows SDK.
 
-Download [the last version SDK](https://firebasestorage.googleapis.com/v0/b/web-portal-for-partners.appspot.com/o/products%2FCakeTubeSDK-WIN.zip?alt=media&token=106a7a65-36fc-4bb2-a698-46370fcc63a4)
+Download [the last version SDK](https://console.firebase.google.com/u/0/project/web-portal-for-partners/storage/web-portal-for-partners.appspot.com/files/products/CakeTube%20SDK%20-%20Test%20app/Last%20version/)
 
 # Requirements #
 

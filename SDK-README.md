@@ -13,63 +13,37 @@ The Windows SDK provides API allowing:
 OS: Windows 7, 8.0, 8.1, 10
 Software: .NET Framework 4.5
 Nuget dependencies: 
-  <package id="CommonServiceLocator" version="1.3" targetFramework="net45" />
-  <package id="Newtonsoft.Json" version="9.0.1" targetFramework="net45" />  
-  <package id="Unity" version="4.0.1" targetFramework="net45" />
+  No third party dependencies are required
 
 ## Setup
 In order to use the SDK the steps described below must be performed.
 1. Install TAP Driver as Administrator via command line: ./tapinstall.exe install "AFTap.inf" "aftap0901"
 2. Install VPN Windows Service as Administrator via command line: ./VpnService.exe -install <ServiceName>
-3. To uninstall service later: ./VpnService.exe -uninstall <ServiceName>Bootstrap
+3. To uninstall service later: ./VpnService.exe -uninstall <ServiceName>
 
-## Bootstrap
-### CakeTubeWindowsBootstrapper Class
+## Initialize
+### CakeTube Class
 Performs initialization of SDK
-
-#### Constructor
-| Syntax | Description |
-| -------|:-----------:|
-| CakeTubeWindowsBootstrapper(BootstrapServerConfiguration, VpnConnectionConfiguration)| Initializes the class new instance. |
 
 #### Methods
 | Syntax | Description |
 | -------|:-----------:|
-| void Bootstrap(ICakeTubeIocContainer) | Initializes all SDK states and dependencies.|
-
-### BootstrapServerConfiguration Class
-Parameters required to configure Server service
-
-#### Properties
-| Syntax | Description |
-| -------|:-----------:|
-| List< Uri > VpnServerUrlList | List of vpn server addresses. When length bigger than one, sdk will randomly pick one for each request. |
-| string CarrierId | Carrier id. |
-
-### VpnConnectionConfiguration Class
-
-Parameters required to configure Connection service
+| static void Initialize(string serviceName, string carrierId, string baseUrl) | Initializes all SDK states and dependencies.|
+| static void Initialize(string serviceName, string carrierId, string baseUrl, bool autoConnect) | Initializes all SDK states and dependencies. Set "autoConnect" to true if SDK should reconnect on network switch.|
+| static void Initialize(string serviceName, string carrierId, string baseUrl, string openVpnPath) | Initializes all SDK states and dependencies. "openVpnPath" is a custom path for OpenVpn binaries. Default path is "%temp%\service_name", If "openVpnPath" is null or empty binaries will be extracted to default location. |
+| static void Initialize(string serviceName, string carrierId, string baseUrl, bool autoConnect, string openVpnPath) | Initializes all SDK states and dependencies. Set "autoConnect" to true if SDK should reconnect on a network switch. "openVpnPath" is a custom path for OpenVpn binaries. Default path is "%temp%\service_name", If "openVpnPath" is null or empty binaries will be extracted to default location.|
 
 #### Properties
 | Syntax | Description |
 | -------|:-----------:|
-| string VpnWindowsServiceName | Name of the service you installed in SETUP section. |
+| VpnConnectionService | The service for connect/disconnect operations. |
+| VpnWindowsServiceHandler | The handler that allows to interact with Windows service., check its state and etc. |
+| VpnServerService | The service that allows to perform backend related requests. |
+
 
 #### Example
 ```
-var cakeTubeConfiguration = new BootstrapServerConfiguration
-            {
-                CarrierId = "5",
-                VpnServerUrlList = new List<Uri> { <urls> }                
-            };
-
-var vpnConnectionConfiguration = new VpnConnectionConfiguration
-            {
-            VpnWindowsServiceName = "YourVpnServiceName"
-            };
-
-var cakeTubeBootstrapper = new CakeTubeWindowsBootstrapper(cakeTubeConfiguration, vpnConnectionConfiguration);            
-cakeTubeBootstrapper.Bootstrapp(new UnityCakeTubeIocContainer());
+CakeTube.Initialize("CakeTube Demo Vpn Service", "afdemo", "https://backend.northghost.com");
 ```
 
 ## Authentication

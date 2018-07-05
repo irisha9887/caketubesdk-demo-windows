@@ -99,3 +99,29 @@ Recommended place to create this service is an Application singleton class. This
 | -------|:-----------:|
 | VpnConnectionStateChangedEventHandler VpnStateChanged | Notifies subscribers about Vpn Connection state changes. |
 | VpnTrafficChangedEventHandler VpnTrafficChanged | Notifies subscribers about changes of consumed network traffic value |
+
+## Logging
+The SDK provides two types of logging: console logging and file logging. Both can be used the same time.
+
+### CakeTubeLogger Class
+
+#### Methods
+| Syntax | Description |
+| -------|:-----------:|
+| static void AddHandler(BaseLoggerListener) | Adds a handler of a specific type. |
+
+
+### FileLoggerListener Class inherited from BaseLoggerListener
+
+#### Constructor
+| Syntax | Description |
+| -------|:-----------:|
+| FileLoggerListener(string path) | Initializes a new instance of FileLoggerListener. Path is a full filename. |
+
+
+### ConsoleLoggerListener Class inherited from BaseLoggerListener
+
+#### Constructor
+| Syntax | Description |
+| -------|:-----------:|
+| ConsoleLoggerListener() | Initializes a new instance of ConsoleLoggerListener. A log will be written to console output. |

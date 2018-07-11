@@ -70,7 +70,7 @@ Recommended place to create this service is an Application singleton class.
 | Task< VpnCountersResponse > GetTrafficCountersAsync(GetCountersRequestParams) | Gets incoming and outcoming vpn traffic from the server. |
 | Task< VpnLoginResponce > LoginAsync(VpnLoginParams) | Logs in to vpn server. |
 | Task< VpnCountriesResponse > GetCountriesAsync(string) | Gets available vpn countries. Requires access token as parameter. |
-| Task< VpnCheckCredentialsResponse > CheckCredentialsAsync(CheckCredentialsParams) | Cheks if received credentials are still valid. |
+| Task< VpnVerifyCredentialsResponse > VerifyCredentialsAsync(VerifyCredentialsParams) | Cheks if received credentials are still valid. |
 | Task< VpnCredentialsResponce > GetCredentialsAsync(GetCredentialsParams) | Gets credentials for establishing vpn connection. |
 
 ## Connection
@@ -99,6 +99,7 @@ Recommended place to create this service is an Application singleton class. This
 | -------|:-----------:|
 | VpnConnectionStateChangedEventHandler VpnStateChanged | Notifies subscribers about Vpn Connection state changes. |
 | VpnTrafficChangedEventHandler VpnTrafficChanged | Notifies subscribers about changes of consumed network traffic value |
+
 
 ## Logging
 The SDK provides two types of logging: console logging and file logging. Both can be used the same time.

@@ -239,8 +239,7 @@
             // Init remaining traffic timer
             this.InitializeTimer();
 
-            // Init logging
-            this.InitializeLogging();
+            this.IsLoggingEnabled = CakeTubeLogger.IsEnabled;
 
             // Init predefined carriers and countries            
             this.InitializeCountriesList();
@@ -414,7 +413,19 @@
         public bool IsLoggingEnabled
         {
             get => CakeTubeLogger.IsEnabled;
-            set => CakeTubeLogger.IsEnabled = value;
+            set
+            {
+                if (value)
+                {
+                    var eventLoggerListener = new EventLoggerListener();
+                    eventLoggerListener.LogEntryArrived += (sender, args) => this.AddLogEntry(args.Entry);
+                    CakeTubeLogger.AddHandler(eventLoggerListener);
+                }
+                else
+                {
+                    CakeTubeLogger.RemoveAllHandlers<EventLoggerListener>();
+                }                                
+            }
         }
 
         /// <summary>
@@ -560,7 +571,7 @@
                 this.BootstrapVpn();
 
                 var passwordBox = (PasswordBox)parameter;
-                var password = passwordBox.Password;
+                var passwordBoxValue = passwordBox.Password;
 
                 var isGithub = this.UseGithubAuthorization;
 
@@ -568,7 +579,7 @@
                             ? VpnAuthenticationMethod.GitHub
                             : VpnAuthenticationMethod.Anonymous;
 
-                var authAccessToken = isGithub ? await GitHubHelper.GetGithubOAuthToken(this.GitHubLogin, password) : string.Empty;
+                var authAccessToken = isGithub ? await GitHubHelper.GetGithubOAuthToken(this.GitHubLogin, passwordBoxValue) : string.Empty;
 
                 if (isGithub && string.IsNullOrEmpty(authAccessToken))
                 {
@@ -625,7 +636,12 @@
             try
             {
                 // Get available countries
-                var countriesResponse = await this.vpnServerService.GetCountriesAsync(this.AccessToken, VpnProtocolType.OpenVpn);
+                var countriesResponse = await this.vpnServerService.GetCountriesAsync(
+                                            new GetCountriesParams
+                                                {
+                                                    AccessToken = this.AccessToken,
+                                                    Type = VpnProtocolType.OpenVpnUdp
+                                                });
 
                 // Check whether request was successful
                 if (!countriesResponse.IsSuccess)
@@ -851,7 +867,7 @@
                 }
 
                 credentialsParams.VpnType = VpnProtocolType.OpenVpnTcp;
-                connectionResult = await this.Connect(credentialsParams);                
+                await this.Connect(credentialsParams);                
             }
             catch (Exception e)
             {
@@ -957,16 +973,6 @@
             catch (Exception e)
             {
             }
-        }
-
-        /// <summary>
-        /// Performs logging initialization.
-        /// </summary>
-        private void InitializeLogging()
-        {
-            var loggerListener = new EventLoggerListener();
-            loggerListener.LogEntryArrived += (sender, args) => this.AddLogEntry(args.Entry);
-            CakeTubeLogger.AddHandler(loggerListener);
         }
 
         /// <summary>

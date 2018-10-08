@@ -53,8 +53,7 @@
         /// <param name="exception">Exception.</param>
         public override void Error(string message, Exception exception)
         {
-            var result =
-                this.CreateDecoratedMessage("ERROR", message + "\n\rException:\r\n{0}", exception.ToString());
+            var result = this.CreateDecoratedMessage("Error", $"{message} |{this.CreateDecoratedMessage(exception)}");
             this.OnLogEntryArrived(result);
         }
 
